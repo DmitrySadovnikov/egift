@@ -1,8 +1,8 @@
 'use client'
 
 import React, { FC, useEffect, useState } from 'react'
-import { StoresType } from '../Store/types';
-import { getStores } from '../Store/utils';
+import { StoresType } from './types';
+import { getStores } from './utils';
 import Store from '@/app/components/Store';
 
 const Dashboard: FC = () => {
@@ -63,21 +63,40 @@ const Dashboard: FC = () => {
   };
 
   return (
-    <>
-      <div>
-        Stores
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
+          Gift Cards
+        </h1>
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search gift cards..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition duration-150 ease-in-out"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(stores).map(([storeKey, products]) => (
+            <Store key={storeKey} storeKey={storeKey} products={products} />
+          ))}
+        </div>
+        {!stopScroll && (
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setOffset(prevOffset => prevOffset + 10)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition duration-150 ease-in-out"
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
-      <input
-        type="text"
-        placeholder="Search by name"
-        value={searchQuery}
-        onChange={handleSearchChange}
-      />
-      {Object.entries(stores).map(([storeKey, products]) => (
-        <Store key={storeKey} storeKey={storeKey} products={products} />
-      ))}
-    </>
+    </div>
   )
 }
 
-export default Dashboard;
+Dashboard.displayName = 'Dashboard'
+
+export default Dashboard

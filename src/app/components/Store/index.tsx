@@ -1,30 +1,43 @@
 'use client'
 
 import React, { FC, useState } from 'react'
-import { STORES } from '@/app/components/Store/config';
-import { ProductsType } from '@/app/components/Store/types';
-import Image from "next/image";
+import { ProductsType } from '../Dashboard/types'
+import Image from 'next/image'
 
-const Store: FC = ({ storeKey, products }: { storeKey: string, products: ProductsType }) => {
+interface StoreProps {
+  storeKey: string
+  products: ProductsType
+}
+
+const Store: FC<StoreProps> = ({ storeKey, products }) => {
   const imagePaths = `/images/stores/${storeKey}`
 
   const [imgSrc, setImgSrc] = useState(`${imagePaths}.png`);
 
   return (
-    <div >
-      <Image
-        src={imgSrc}
-        alt={STORES[storeKey]}
-        width={300}
-        height={186}
-        style={{ borderRadius: 20 }}
-        onError={() => setImgSrc(`${imagePaths}.jpg`)}
-      />
-      <p>
-        {STORES[storeKey]} {products.bupa_life_rewards}%
-      </p>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition duration-300 ease-in-out transform hover:scale-105">
+      <div className="relative h-48">
+        <Image
+          src={imgSrc}
+          onError={() => setImgSrc(`${imagePaths}.jpg`)}
+          alt={storeKey}
+          layout="fill"
+          objectFit="cover"
+          className="transition duration-300 ease-in-out transform hover:scale-110"
+        />
+      </div>
+      <div className="p-4">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          {storeKey}
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
+          Discount: {products.bupa_life_rewards}%
+        </p>
+      </div>
     </div>
   )
 }
 
-export default Store;
+Store.displayName = 'Store'
+
+export default Store
