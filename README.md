@@ -4,9 +4,11 @@
 
 ## Overview
 
-A web application for Bupa insurance members to manage their Life Rewards Gift Cards. [Learn more about Bupa Life Rewards](https://www.bupa.com.au/offers/members-offers/life-rewards).
+A web application for Bupa insurance members to manage their Life Rewards Gift Cards.
 
-[Live Demo](https://bupa-life-rewards-gift-cards.vercel.app/)
+[Learn more about Bupa Life Rewards](https://www.bupa.com.au/offers/members-offers/life-rewards).
+
+[Live Demo](https://bupa-life-rewards-gift-cards-afh3s7wtf.vercel.app/)
 
 ## Quick Start
 
