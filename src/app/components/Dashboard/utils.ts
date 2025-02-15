@@ -34,7 +34,7 @@ export const getGiftCards = async ({ product, giftCardsKeys, matchName, minValue
   const jsonData = await fetchJsonData();
   let result: GiftCardsType = jsonData;
 
-  if ((giftCardsKeys?.length ?? []) > 0) {
+  if (giftCardsKeys && giftCardsKeys.length > 0) {
     result = Object.keys(result).reduce((acc: GiftCardsType, key) => {
       if (giftCardsKeys.includes(key)) {
         acc[key] = result[key];
