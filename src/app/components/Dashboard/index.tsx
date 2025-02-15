@@ -95,8 +95,16 @@ const Dashboard: FC<DashboardProps> = ({ initGiftCards, initGiftCardKeys }) => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
-          Gift Cards
+          Bupa Life Rewards Gift Cards
         </h1>
+        <p className="text-center text-gray-700 dark:text-gray-300 mb-8">
+          All gift cards are from Bupa Life Rewards. You can get them only if you are a Bupa insurance member.
+        </p>
+        <p className="text-center text-blue-500 dark:text-blue-300 mb-8">
+          <a href="https://www.bupa.com.au/offers/members-offers/life-rewards" target="_blank" rel="noopener noreferrer">
+            Learn more about Bupa Life Rewards
+          </a>
+        </p>
         <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {renderGiftCards(Object.entries(giftCards).filter(([giftCardKey]) => favoriteGiftCardKeys.includes(giftCardKey)))}
