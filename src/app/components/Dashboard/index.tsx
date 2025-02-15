@@ -1,16 +1,24 @@
 'use client'
 
-import React, { FC, useEffect, useState } from 'react'
-import { StoresType } from './types';
-import { getStores } from './utils';
-import Store from '@/app/components/Store';
+import React, { FC, useCallback, useEffect, useState } from 'react'
+import { getGiftCards, setStoredFavoriteGiftCardKeys } from './utils';
+import GiftCard from '@/app/components/GiftCard';
+import { GiftCardsKeys, GiftCardsType } from '@/app/components/GiftCard/types';
+import Search from '@/app/components/Search';
+import { DashboardProps, ProductsType } from '@/app/components/Dashboard/types';
 
-const Dashboard: FC = () => {
+const Dashboard: FC<DashboardProps> = ({ initGiftCards, initGiftCardKeys }) => {
+  const [giftCards, setGiftCards] = useState<GiftCardsType>(initGiftCards);
+  const [favoriteGiftCardKeys, setFavoriteGiftCardKeys] = useState<string[]>(initGiftCardKeys);
   const [stopScroll, setStopScroll] = useState(false);
-  const [stores, setStores] = useState<StoresType>({});
   const [offset, setOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    setGiftCards(initGiftCards);
+    setFavoriteGiftCardKeys(initGiftCardKeys);
+  }, [initGiftCards, initGiftCardKeys]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -22,29 +30,29 @@ const Dashboard: FC = () => {
     };
   }, [searchQuery]);
 
+  const loadGiftCards = useCallback(async () => {
+    const newGiftCards = await getGiftCards({
+      product: 'bupa_life_rewards',
+      limit: 10,
+      offset,
+      matchName: debouncedQuery,
+      sortBy: 'name'
+    });
+
+    if (Object.keys(newGiftCards).length === 0) {
+      setStopScroll(true);
+      return;
+    }
+    setGiftCards(prevGiftCards => ({ ...prevGiftCards, ...newGiftCards }));
+  }, [debouncedQuery, offset]);
+
   useEffect(() => {
-    const loadStores = async () => {
-      const newStores = await getStores({
-        product: 'bupa_life_rewards',
-        limit: 10,
-        offset,
-        matchName: debouncedQuery,
-        sortBy: 'name'
-      });
-
-      if (Object.keys(newStores).length === 0) {
-        setStopScroll(true);
-        return;
-      }
-      setStores(prevStores => ({ ...prevStores, ...newStores }));
-    };
-
-    loadStores();
-  }, [offset, stopScroll, debouncedQuery]);
+    loadGiftCards();
+  }, [loadGiftCards]);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + window.scrollY + 10 >= document.body.offsetHeight) {
+      if (window.innerHeight + window.scrollY + 350 >= document.body.offsetHeight) {
         setOffset(prevOffset => prevOffset + 10);
       }
     };
@@ -58,8 +66,29 @@ const Dashboard: FC = () => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
     setOffset(0);
-    setStores({});
+    setGiftCards({});
     setStopScroll(false);
+  };
+
+  const toggleFavorite = (giftCardKey: string) => {
+    const newFavoriteGiftCardKeys = favoriteGiftCardKeys.includes(giftCardKey)
+      ? favoriteGiftCardKeys.filter(fav => fav !== giftCardKey)
+      : [...favoriteGiftCardKeys, giftCardKey];
+
+    setFavoriteGiftCardKeys(newFavoriteGiftCardKeys);
+    setStoredFavoriteGiftCardKeys(newFavoriteGiftCardKeys);
+  };
+
+  const renderGiftCards = (giftCardEntries: [GiftCardsKeys, ProductsType][]) => {
+    return giftCardEntries.map(([giftCardKey, products]) => (
+      <GiftCard
+        key={giftCardKey}
+        giftCardKey={giftCardKey}
+        products={products}
+        isFavorite={favoriteGiftCardKeys.includes(giftCardKey)}
+        onToggleFavorite={() => toggleFavorite(giftCardKey)}
+      />
+    ));
   };
 
   return (
@@ -68,19 +97,10 @@ const Dashboard: FC = () => {
         <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
           Gift Cards
         </h1>
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search gift cards..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition duration-150 ease-in-out"
-          />
-        </div>
+        <Search searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(stores).map(([storeKey, products]) => (
-            <Store key={storeKey} storeKey={storeKey} products={products} />
-          ))}
+          {renderGiftCards(Object.entries(giftCards).filter(([giftCardKey]) => favoriteGiftCardKeys.includes(giftCardKey)))}
+          {renderGiftCards(Object.entries(giftCards).filter(([giftCardKey]) => !favoriteGiftCardKeys.includes(giftCardKey)))}
         </div>
         {!stopScroll && (
           <div className="text-center mt-8">
@@ -97,6 +117,6 @@ const Dashboard: FC = () => {
   )
 }
 
-Dashboard.displayName = 'Dashboard'
+Dashboard.displayName = 'Dashboard';
 
-export default Dashboard
+export default Dashboard;

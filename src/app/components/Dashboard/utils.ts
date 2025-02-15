@@ -1,6 +1,9 @@
-import { ProductKeys, ProductsType, StoreKeys, StoresType } from './types';
+import { ProductKeys, ProductsType } from './types';
+import { GiftCardsKeys, GiftCardsType } from '@/app/components/GiftCard/types';
 
-const fetchJsonData = async (): Promise<StoresType> => {
+const FAVORITES_KEY = 'favorites';
+
+const fetchJsonData = async (): Promise<GiftCardsType> => {
   const response = await fetch('data.json');
   if (!response.ok) {
     throw new Error('Failed to fetch JSON data');
@@ -8,26 +11,40 @@ const fetchJsonData = async (): Promise<StoresType> => {
   return response.json();
 };
 
-// TODO: Implement sortby popularity
-export const getStores = async ({ product, store, matchName, minValue, limit, offset, sortBy, sortOrder = 'asc' }: {
+export const getStoredFavoriteGiftCardKeys = () => {
+  const storedFavoriteGiftCardKeys = localStorage.getItem(FAVORITES_KEY);
+  if (storedFavoriteGiftCardKeys) {
+    return JSON.parse(storedFavoriteGiftCardKeys);
+  }
+  return [];
+}
+
+export const setStoredFavoriteGiftCardKeys = (keys: string[]) => localStorage.setItem(FAVORITES_KEY, JSON.stringify(keys));
+
+export const getGiftCards = async ({ product, giftCardsKeys, matchName, minValue, limit, offset, sortBy, sortOrder = 'asc' }: {
   product?: ProductKeys,
-  store?: StoreKeys,
+  giftCardsKeys?: GiftCardsKeys[],
   matchName?: string,
   minValue?: number,
   limit?: number,
   offset?: number,
   sortBy?: 'name' | 'value',
   sortOrder?: 'asc' | 'desc'
-}): Promise<StoresType> => {
+}): Promise<GiftCardsType> => {
   const jsonData = await fetchJsonData();
-  let result: StoresType = jsonData;
+  let result: GiftCardsType = jsonData;
 
-  if (store) {
-    result = { [store]: result[store] };
+  if ((giftCardsKeys?.length ?? []) > 0) {
+    result = Object.keys(result).reduce((acc: GiftCardsType, key) => {
+      if (giftCardsKeys.includes(key)) {
+        acc[key] = result[key];
+      }
+      return acc;
+    }, {});
   }
 
   if (product) {
-    result = Object.keys(result).reduce((acc: StoresType, key) => {
+    result = Object.keys(result).reduce((acc: GiftCardsType, key) => {
       if (result[key][product] > 0) {
         acc[key] = { [product]: result[key][product] };
       }
@@ -37,7 +54,7 @@ export const getStores = async ({ product, store, matchName, minValue, limit, of
 
   if (matchName) {
     const matchNameLower = matchName.toLowerCase();
-    result = Object.keys(result).reduce((acc: StoresType, key) => {
+    result = Object.keys(result).reduce((acc: GiftCardsType, key) => {
       if (key.toLowerCase().startsWith(matchNameLower)) {
         acc[key] = result[key];
       } else {
@@ -56,7 +73,7 @@ export const getStores = async ({ product, store, matchName, minValue, limit, of
   }
 
   if (minValue !== undefined) {
-    result = Object.keys(result).reduce((acc: StoresType, key) => {
+    result = Object.keys(result).reduce((acc: GiftCardsType, key) => {
       const filteredProducts = Object.keys(result[key]).reduce((prodAcc: ProductsType, prodKey) => {
         if (result[key][prodKey] >= minValue) {
           prodAcc[prodKey] = result[key][prodKey];
